@@ -1,47 +1,53 @@
 # Autonomous Task Planner & Executor
 
-An AI-powered agent system that breaks down complex user goals into actionable steps, executes them using various tools, and provides real-time progress updates. Built with Next.js, TypeScript, and the Vercel AI SDK.
+A Next.js application that leverages AI to break down complex user goals into actionable steps, execute them using various tools, and provide real-time progress updates. This project demonstrates advanced AI agent orchestration, tool calling, streaming responses, and state management.
 
 ## Overview
 
-The Autonomous Task Planner & Executor is a full-stack application that demonstrates advanced AI agent orchestration, tool integration, and real-time streaming capabilities. Users input high-level goals, and the system automatically:
+The Autonomous Task Planner is an AI-powered system that:
 
-1. **Plans** - Breaks down goals into a step-by-step execution plan with task dependencies
-2. **Executes** - Runs tasks in the correct order, leveraging multiple tools and handling failures gracefully
-3. **Streams** - Provides real-time progress updates as tasks execute
-4. **Analyzes** - Synthesizes results into comprehensive summaries with key insights
+1. **Plans** - Uses AI to break down natural language goals into structured task lists with dependencies
+2. **Executes** - Runs tasks using appropriate tools (web search, calculations, API calls)
+3. **Streams** - Provides real-time progress updates during execution
+4. **Adapts** - Handles failures and adjusts plans dynamically
+5. **Persists** - Maintains execution state and history
 
 ## Key Features
 
-### AI-Powered Planning
-The system uses an LLM to parse natural language goals and generate structured execution plans with clear task descriptions, required tools, and dependencies.
+### 🤖 Intelligent Task Planning
+- Natural language goal parsing
+- Automatic task breakdown with dependencies
+- Tool requirement identification
+- Optional vs. required task classification
 
-### Intelligent Tool Integration
-Three core tool types are implemented:
-- **Web Search** - Retrieve information from the internet
-- **Data Processing** - Perform calculations, unit conversions, and data analysis
-- **API Integration** - Fetch data from external services (weather, currency conversion, etc.)
+### 🛠️ Tool Integration
+- **Web Search** - Online information retrieval
+- **Data Processor** - Calculations, data analysis, transformations
+- **API Fetcher** - Weather, currency conversion, stock data
 
-### Execution Engine
-The execution engine manages the complete task lifecycle:
-- Respects task dependencies and executes tasks in the correct order
-- Runs independent tasks in parallel when possible
-- Handles both successes and failures gracefully
-- Implements retry logic with exponential backoff
-- Skips optional tasks when dependencies fail
+### ⚡ Real-time Execution
+- Streaming progress updates
+- Parallel task execution where possible
+- Dependency-aware task ordering
+- Retry logic with exponential backoff
 
-### Real-Time Streaming
-Progress updates stream to the UI as tasks execute, providing immediate feedback on:
-- Task status changes (queued, running, succeeded, failed, skipped)
-- Tool execution and results
-- Errors and recovery attempts
-- Final analysis and recommendations
+### 🔄 Error Handling & Recovery
+- Automatic retries for failed tasks
+- Fallback strategies
+- Graceful degradation for optional tasks
+- Clear error reporting
 
-### State Persistence
-All execution state is persisted to the database, allowing users to:
-- Resume interrupted executions
-- Review past execution history
-- Track execution status across page refreshes
+### 💾 State Persistence
+- Database-backed execution history
+- Survives page refreshes
+- User authentication and session management
+- Execution replay and analysis
+
+### 🎨 Modern UI
+- Next.js 16 with App Router
+- Tailwind CSS styling
+- Real-time streaming updates
+- Responsive design
 
 ## Architecture
 
@@ -49,441 +55,367 @@ All execution state is persisted to the database, allowing users to:
 
 | Component | Technology | Purpose |
 | --- | --- | --- |
-| **Frontend** | React 19, Tailwind CSS 4 | User interface and real-time updates |
-| **Backend** | Express.js, tRPC 11 | API and business logic |
-| **Database** | MySQL/TiDB with Drizzle ORM | State persistence |
-| **AI/LLM** | Vercel AI SDK | Planning and reasoning |
-| **Authentication** | Manus OAuth | User authentication |
+| **Frontend** | Next.js 16, React 19 | UI and user interaction |
+| **Backend** | Next.js API Routes | Server-side logic |
+| **AI/LLM** | AI SDK, OpenAI | Task planning and analysis |
+| **Database** | MySQL (PlanetScale/Drizzle) | Data persistence |
+| **Styling** | Tailwind CSS | UI components |
+| **State** | tRPC, TanStack Query | API communication |
+| **Auth** | Custom OAuth | User authentication |
 
-### System Components
+### Core Components
 
-**Client Layer** (`client/src/`)
-- `pages/Home.tsx` - Landing page with feature overview
-- `pages/TaskPlanner.tsx` - Main planner UI with plan visualization and execution monitoring
-- `hooks/useStreamingExecution.ts` - Custom hook for handling streaming updates
+**Execution Engine** (`server/executionEngineV2.ts`)
+- Plan generation from natural language goals
+- Dependency graph construction
+- Parallel task execution
+- Streaming update callbacks
 
-**Server Layer** (`server/`)
-- `routers.ts` - tRPC API procedures for planning and execution
-- `executionEngineV2.ts` - Core execution engine with streaming support
-- `tools.ts` - Tool implementations (web search, data processing, API fetching)
-- `db.ts` - Database query helpers
-- `streaming.ts` - Streaming utilities
+**Tool System** (`server/tools.ts`)
+- Web search using DuckDuckGo API
+- Data processing (calculations, conversions)
+- API integration (weather, currency, stocks)
 
-**Database** (`drizzle/`)
-- `schema.ts` - Database tables for executions, tasks, and results
+**Planning System** (`server/executionEngineV2.ts`)
+- AI-powered task breakdown
+- Schema-based structured output
+- Dependency analysis
 
-## Usage
+**Streaming System** (`server/streaming.ts`)
+- Real-time execution updates
+- Server-sent events
+- Progress tracking
 
-### Getting Started
+**Database Layer** (`server/db.ts`, `drizzle/schema.ts`)
+- Execution state persistence
+- Task results storage
+- User management
 
-1. **Clone and Install**
+## Installation
+
+### Prerequisites
+- Node.js ≥ 20.9
+- TypeScript ≥ 5.1
+- MySQL database (PlanetScale, AWS RDS, or local)
+- OpenAI API key
+
+### Setup
+1. **Clone the repository**
    ```bash
    git clone <repository>
    cd autonomous-task-planner
+   ```
+
+2. **Install dependencies**
+   ```bash
    pnpm install
    ```
 
-2. **Set Up Environment**
-   The application uses pre-configured environment variables from the Manus platform:
-   - `VITE_APP_TITLE` - Application title
-   - `VITE_OAUTH_PORTAL_URL` - OAuth login URL
-   - `BUILT_IN_FORGE_API_KEY` - LLM API key (server-side)
-   - `DATABASE_URL` - Database connection string
-
-3. **Run Development Server**
+3. **Environment Configuration**
+   Create a `.env.local` file:
    ```bash
-   pnpm dev
-   ```
-   The application will be available at `http://localhost:3000`
+   # Database
+   DATABASE_URL=mysql://user:password@host:port/database
 
-4. **Database Migrations**
+   # AI/LLM
+   OPENAI_API_KEY=your_openai_key
+
+   # Auth (if using OAuth)
+   MANUS_CLIENT_ID=your_client_id
+   MANUS_CLIENT_SECRET=your_client_secret
+
+   # Optional: Other providers
+   GROQ_API_KEY=your_groq_key
+   GOOGLE_API_KEY=your_google_key
+   ```
+
+4. **Database Setup**
    ```bash
-   pnpm db:push
+   # Generate and run migrations
+   pnpm run db:push
    ```
 
-### Using the Application
+5. **Development Server**
+   ```bash
+   pnpm run dev
+   ```
 
-1. **Sign In** - Click "Sign In" to authenticate with Manus OAuth
-2. **Create a Goal** - Enter a high-level goal in the text area
-3. **Review Plan** - The system generates a plan with all identified tasks
-4. **Execute** - Click "Start Execution" to begin task execution
-5. **Monitor Progress** - Watch real-time updates as tasks execute
-6. **Review Results** - View the final analysis and task results
+The application will be available at `http://localhost:3000`
+
+## Usage
+
+### Basic Workflow
+
+1. **Authentication** - Log in using the configured OAuth provider
+2. **Enter Goal** - Describe your objective in natural language
+3. **Generate Plan** - AI breaks down the goal into executable tasks
+4. **Execute Plan** - Watch real-time progress as tasks run
+5. **Review Results** - Analyze the final output and insights
 
 ### Example Goals
 
 **Research & Analysis**
 ```
-Research the top 5 AI startups funded in 2024, compare their funding amounts, 
+Research the top 5 AI startups funded in 2024, compare their funding amounts,
 and create a summary with key insights
 ```
 
 **Data Processing**
 ```
-Find the weather in Tokyo tomorrow, convert the temperature to Fahrenheit, 
+Find the weather in Tokyo tomorrow, convert the temperature to Fahrenheit,
 and suggest 3 outdoor activities suitable for those conditions
 ```
 
 **Financial Analysis**
 ```
-Calculate the compound annual growth rate of Apple stock over the last 5 years 
+Calculate the compound annual growth rate of Apple stock over the last 5 years
 and compare it with Microsoft
 ```
 
+### Tool Capabilities
+
+**Web Search**
+- Searches using DuckDuckGo API
+- Extracts relevant results and snippets
+- Handles rate limiting gracefully
+
+**Data Processor**
+- CAGR calculations
+- Temperature conversions
+- Percentage change analysis
+- Statistical comparisons
+
+**API Fetcher**
+- Weather data (Open-Meteo)
+- Currency conversion (ExchangeRate-API)
+- Stock prices (placeholder for production)
+
 ## API Reference
 
-### tRPC Procedures
+### Core Endpoints
 
-#### `planner.createExecution`
-Creates a new execution and generates a plan for a goal.
-
-**Input:**
+**Task Planning**
 ```typescript
+POST /api/planner/createExecution
 {
-  goal: string  // Minimum 10 characters
+  "goal": "Research AI startups..."
 }
 ```
 
-**Output:**
+**Execution Control**
 ```typescript
+POST /api/planner/startExecution
 {
-  executionId: number
-  goal: string
-  plan: ExecutionPlan
+  "executionId": 123
 }
 ```
 
-#### `planner.startExecution`
-Starts the execution of a plan.
-
-**Input:**
+**Streaming Updates**
 ```typescript
-{
-  executionId: number
+GET /api/streaming/execution/:id
+// Server-sent events for real-time updates
+```
+
+### Tool Interface
+
+```typescript
+interface ToolResult {
+  success: boolean;
+  data?: any;
+  error?: string;
 }
 ```
-
-**Output:**
-```typescript
-{
-  success: boolean
-  results?: {
-    analysis: string
-    taskResults: Record<string, any>
-  }
-  error?: string
-}
-```
-
-#### `planner.getExecution`
-Retrieves execution details.
-
-**Input:**
-```typescript
-{
-  executionId: number
-}
-```
-
-**Output:**
-```typescript
-{
-  id: number
-  userId: number
-  goal: string
-  status: "planning" | "executing" | "completed" | "failed"
-  plan: ExecutionPlan
-  results?: any
-  error?: string
-  tasks: Task[]
-}
-```
-
-#### `planner.getExecutionHistory`
-Retrieves user's execution history.
-
-**Input:**
-```typescript
-{
-  limit?: number  // Default: 20
-}
-```
-
-**Output:**
-```typescript
-Execution[]
-```
-
-## Tool Implementations
-
-### Web Search Tool
-Searches the internet for information using DuckDuckGo API.
-
-**Parameters:**
-```typescript
-{
-  query: string
-}
-```
-
-**Returns:**
-```typescript
-{
-  query: string
-  results: Array<{
-    title: string
-    url: string
-    snippet: string
-  }>
-  relatedTopics: Array<{
-    topic: string
-    description: string
-  }>
-}
-```
-
-### Data Processor Tool
-Performs calculations and data analysis.
-
-**Supported Operations:**
-- `calculate_cagr` - Compound Annual Growth Rate
-- `convert_temperature` - Temperature unit conversion
-- `calculate_percentage_change` - Percentage change calculation
-- `compare_values` - Statistical comparison of values
-
-**Example:**
-```typescript
-{
-  operation: "calculate_cagr",
-  data: {
-    initialValue: 100,
-    finalValue: 200,
-    years: 5
-  }
-}
-```
-
-### API Fetcher Tool
-Fetches data from external APIs.
-
-**Supported APIs:**
-- `weather` - Current weather data (Open-Meteo)
-- `currency_conversion` - Currency exchange rates
-- `stock_price` - Stock price data (placeholder)
-
-**Example:**
-```typescript
-{
-  apiType: "weather",
-  params: {
-    city: "Tokyo"
-  }
-}
-```
-
-## Error Handling & Recovery
-
-The system implements robust error handling:
-
-1. **Retry Logic** - Failed tasks are retried up to 2 times with exponential backoff
-2. **Dependency Management** - Tasks with failed dependencies are skipped or marked as failed
-3. **Optional Tasks** - Optional tasks are skipped if dependencies fail
-4. **Error Messages** - Clear error messages are provided to users
-5. **Graceful Degradation** - The system continues executing other tasks even when one fails
-
-## Streaming Architecture
-
-The system uses Server-Sent Events (SSE) for real-time streaming:
-
-1. **Client** - Establishes an EventSource connection to the streaming endpoint
-2. **Server** - Sends JSON-formatted updates as tasks execute
-3. **Updates** - Include task status, progress messages, and results
-4. **Termination** - Connection closes when execution completes
-
-**Stream Update Format:**
-```typescript
-{
-  type: "plan" | "task_start" | "task_progress" | "task_complete" | "task_error" | "execution_complete" | "execution_error"
-  executionId: number
-  taskId?: string
-  message: string
-  data?: any
-}
-```
-
-## Database Schema
-
-### Executions Table
-Stores the overall execution state for each user goal.
-
-| Column | Type | Description |
-| --- | --- | --- |
-| id | int | Primary key |
-| userId | int | User who created the execution |
-| goal | text | Original user goal |
-| status | enum | Current status |
-| plan | json | Full execution plan |
-| results | json | Final results and analysis |
-| error | text | Error message if failed |
-| createdAt | timestamp | Creation time |
-| updatedAt | timestamp | Last update time |
-
-### Tasks Table
-Stores individual tasks within an execution.
-
-| Column | Type | Description |
-| --- | --- | --- |
-| id | int | Primary key |
-| executionId | int | Parent execution |
-| taskId | varchar | Unique ID within execution |
-| description | text | Task description |
-| tools | json | Required tools |
-| dependencies | json | Task dependencies |
-| status | enum | Current status |
-| output | text | Task result |
-| error | text | Error message if failed |
-| startedAt | timestamp | When task started |
-| completedAt | timestamp | When task completed |
-
-### Task Results Table
-Stores intermediate results and streaming updates.
-
-| Column | Type | Description |
-| --- | --- | --- |
-| id | int | Primary key |
-| taskId | int | Parent task |
-| executionId | int | Parent execution |
-| message | text | Update message |
-| type | enum | Message type |
-| createdAt | timestamp | Creation time |
 
 ## Development
 
 ### Project Structure
-
 ```
 autonomous-task-planner/
-├── client/                    # Frontend (React)
+├── client/                 # Frontend React app
 │   ├── src/
-│   │   ├── pages/            # Page components
-│   │   ├── components/       # Reusable components
-│   │   ├── hooks/            # Custom hooks
-│   │   ├── lib/              # Utilities
-│   │   └── App.tsx           # Main app component
-│   └── public/               # Static assets
-├── server/                    # Backend (Express/tRPC)
-│   ├── routers.ts            # tRPC procedures
-│   ├── executionEngineV2.ts  # Execution engine
-│   ├── tools.ts              # Tool implementations
-│   ├── db.ts                 # Database helpers
-│   └── streaming.ts          # Streaming utilities
-├── drizzle/                   # Database
-│   ├── schema.ts             # Table definitions
-│   └── migrations/           # Migration files
-├── shared/                    # Shared code
-│   └── types.ts              # Shared types
-└── README.md                 # This file
+│   │   ├── components/     # UI components
+│   │   ├── pages/         # Page components
+│   │   ├── hooks/         # Custom React hooks
+│   │   └── lib/           # Utilities
+├── server/                 # Backend API
+│   ├── _core/             # Core utilities
+│   ├── executionEngine.ts # Task execution logic
+│   ├── tools.ts           # Tool implementations
+│   ├── routers.ts         # tRPC routers
+│   └── db.ts              # Database operations
+├── shared/                 # Shared types/utilities
+├── drizzle/               # Database schema/migrations
+└── package.json
 ```
+
+### Key Files
+
+- `server/executionEngineV2.ts` - Main execution logic
+- `server/tools.ts` - Tool implementations
+- `client/src/pages/TaskPlanner.tsx` - Main UI component
+- `shared/types.ts` - TypeScript type definitions
+- `drizzle/schema.ts` - Database schema
 
 ### Adding New Tools
 
-To add a new tool:
+1. **Implement Tool Function** in `server/tools.ts`:
+```typescript
+export async function newTool(params: any): Promise<ToolResult> {
+  // Tool implementation
+}
+```
 
-1. **Implement the tool function** in `server/tools.ts`:
-   ```typescript
-   export async function myTool(params: any): Promise<ToolResult> {
-     // Implementation
+2. **Register Tool** in `executeTool` function:
+```typescript
+case "new_tool":
+  return newTool(params);
+```
+
+3. **Update Planning Prompts** to include new tool
+
+### Extending the Planner
+
+**Custom Task Types**
+- Modify prompts in `executionEngineV2.ts`
+- Add new tool categories
+- Update schema validation
+
+**Additional AI Providers**
+- Extend AI SDK integration
+- Add provider configurations
+- Update environment variables
+
+## Deployment
+
+### Vercel Deployment
+
+1. **Connect Repository**
+   - Import project to Vercel
+   - Configure environment variables
+
+2. **Database Setup**
+   - Use PlanetScale or similar
+   - Update `DATABASE_URL`
+
+3. **Build Configuration**
+   ```json
+   {
+     "buildCommand": "pnpm build",
+     "devCommand": "pnpm dev",
+     "installCommand": "pnpm install"
    }
    ```
 
-2. **Register in `executeTool`** function:
-   ```typescript
-   case "my_tool":
-     return myTool(params);
+4. **Deploy**
+   ```bash
+   vercel --prod
    ```
 
-3. **Update LLM prompts** to include the new tool in available options
+### Environment Variables
 
-### Adding New Operations
+**Required**
+- `DATABASE_URL` - MySQL connection string
+- `OPENAI_API_KEY` - OpenAI API key
 
-To add new data processing operations:
+**Optional**
+- `MANUS_CLIENT_ID` - OAuth client ID
+- `MANUS_CLIENT_SECRET` - OAuth client secret
+- `GROQ_API_KEY` - Alternative LLM provider
+- `GOOGLE_API_KEY` - Google AI provider
 
-1. **Add case in `dataProcessor`** function:
-   ```typescript
-   case "my_operation":
-     // Implementation
-     break;
-   ```
+## Configuration
 
-2. **Update tool documentation** with the new operation
+### AI Model Settings
+
+The system uses OpenAI GPT-4 by default. Configure in `server/_core/llm.ts`:
+
+```typescript
+const model = "gpt-4o"; // or other OpenAI models
+```
+
+### Execution Parameters
+
+Modify retry logic and timeouts in `executionEngineV2.ts`:
+
+```typescript
+const maxRetries = 2;
+const retryDelay = 1000; // ms
+```
+
+### Tool Timeouts
+
+Configure tool execution timeouts in `server/tools.ts`:
+
+```typescript
+const timeout = 30000; // 30 seconds
+```
 
 ## Performance Considerations
 
-- **Parallel Execution** - Independent tasks run concurrently
-- **Caching** - LLM responses are not cached (can be added for repeated goals)
-- **Database Indexing** - Ensure indexes on userId and executionId
-- **Streaming** - SSE is used for real-time updates without polling
-- **Tool Timeouts** - Implement timeouts for external API calls
+- **Task Parallelization** - Independent tasks run concurrently
+- **Streaming Efficiency** - Minimal payload updates
+- **Database Optimization** - Indexed queries for execution history
+- **Caching Strategy** - Consider Redis for frequent API calls
 
-## Security Considerations
+## Security
 
-- **Authentication** - All endpoints require Manus OAuth authentication
-- **Authorization** - Users can only access their own executions
-- **Input Validation** - All user inputs are validated and sanitized
-- **API Keys** - LLM and external API keys are stored server-side only
-- **CORS** - Streaming endpoints have appropriate CORS headers
-
-## Future Enhancements
-
-- **Tool Marketplace** - Allow users to add custom tools
-- **Execution Templates** - Pre-built goal templates
-- **Collaborative Execution** - Share executions with other users
-- **Advanced Scheduling** - Schedule goals to run at specific times
-- **Webhook Integration** - Trigger executions from external systems
-- **Custom LLM Models** - Support for different LLM providers
-- **Execution Analytics** - Track success rates and performance metrics
-- **Tool Caching** - Cache tool results to improve performance
+- **API Key Management** - Secure environment variable storage
+- **Input Validation** - Zod schemas for all inputs
+- **Rate Limiting** - Built into tool implementations
+- **Authentication** - OAuth-based user sessions
 
 ## Troubleshooting
 
 ### Common Issues
 
-**"Plan generation failed"**
-- Ensure the goal is at least 10 characters long
-- Check that the LLM API key is configured correctly
-- Verify network connectivity
+**Database Connection Failed**
+- Verify `DATABASE_URL` format
+- Check database server status
+- Ensure proper permissions
 
-**"Task execution failed"**
-- Check tool-specific error messages
-- Verify external API availability (weather, currency, etc.)
-- Review task dependencies for circular references
+**AI API Errors**
+- Confirm API key validity
+- Check rate limits
+- Verify model availability
 
-**"Streaming updates not appearing"**
-- Ensure EventSource is supported in your browser
-- Check browser console for connection errors
-- Verify server is sending proper SSE headers
+**Streaming Not Working**
+- Check browser compatibility
+- Verify server-sent events support
+- Review network connectivity
+
+**Tool Execution Failures**
+- Check tool-specific API keys
+- Verify network access
+- Review error logs
+
+### Debug Mode
+
+Enable detailed logging:
+```bash
+DEBUG=* pnpm run dev
+```
 
 ## Contributing
 
-Contributions are welcome! Please follow these guidelines:
-
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+3. Make changes with tests
+4. Submit a pull request
+
+### Development Guidelines
+
+- Use TypeScript for all new code
+- Follow existing code patterns
+- Add tests for new features
+- Update documentation
 
 ## License
 
-This project is part of the AI Engineer Take-Home Assignment.
-
-## Support
-
-For issues or questions, please refer to the GitHub repository or contact the development team.
+This project is open source. See LICENSE file for details.
 
 ## Acknowledgments
 
 - Built with [Next.js](https://nextjs.org/)
-- Powered by [Vercel AI SDK](https://sdk.vercel.ai/)
+- Powered by [OpenAI](https://openai.com/)
 - Styled with [Tailwind CSS](https://tailwindcss.com/)
-- Database with [Drizzle ORM](https://orm.drizzle.team/)
+- Database with [Drizzle ORM](https://drizzle.team/)
