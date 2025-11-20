@@ -475,12 +475,7 @@ def main():
             options=model_options.get(provider, []),
         )
         
-        # API Key input
-        api_key = st.text_input(
-            f"{provider.value.upper()} API Key",
-            type="password",
-            value=os.getenv(f"{provider.value.upper()}_API_KEY", "")
-        )
+
         
         # Temperature setting
         temperature = st.slider(
@@ -515,8 +510,9 @@ def main():
         
         # Generate task plan
         if st.button("Generate Task Plan"):
+            api_key = os.getenv(f"{provider.value.upper()}_API_KEY", "")
             if not api_key:
-                st.error("Please provide an API key.")
+                st.error(f"Please set the {provider.value.upper()}_API_KEY environment variable.")
             elif not goal.strip():
                 st.error("Please enter a goal.")
             else:
@@ -528,18 +524,18 @@ def main():
                         temperature=temperature,
                         max_tokens=max_tokens
                     )
-                    
+
                     llm_provider = LLMFactory.create_provider(provider, config)
                     planner = TaskPlanner(llm_provider)
-                    
+
                     with st.spinner("Generating task plan..."):
                         plan = planner.plan_goal(goal)
-                    
+
                     st.success("Task plan generated successfully!")
                     st.session_state['plan'] = plan
                     st.session_state['goal'] = goal
                     st.session_state['planner'] = planner
-                    
+
                 except Exception as e:
                     st.error(f"Error generating plan: {str(e)}")
         
